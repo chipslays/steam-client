@@ -1,0 +1,21 @@
+{
+    "name": "aethletic/steam-api",
+    "description": "Simple Steam API library.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "aethletic",
+            "email": "hello@botify.ru"
+        }
+    ],
+    "require": {
+        "phpseclib/phpseclib": "^2.0",
+        "php-curl-class/php-curl-class": "^8.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Steam\\": "steam/"
+        }
+    }
+}
