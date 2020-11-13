@@ -1,5 +1,5 @@
 {
-    "name": "aethletic/steam-api",
+    "name": "aethletic/steam-client",
     "description": "Simple Steam API library.",
     "type": "library",
     "license": "MIT",
