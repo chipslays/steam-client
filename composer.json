@@ -1,6 +1,6 @@
 {
     "name": "aethletic/steam-client",
-    "description": "Simple Steam API library.",
+    "description": "Steam Client library for PHP.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -11,11 +11,15 @@
     ],
     "require": {
         "phpseclib/phpseclib": "^2.0",
-        "guzzlehttp/guzzle": "^7.0"
+        "php-curl-class/php-curl-class": "^8.9",
+        "aethletic/php-container": "^0.0.1",
+        "adbario/php-dot-notation": "^2.2",
+        "league/climate": "^3.6"
     },
     "autoload": {
         "psr-4": {
             "Steam\\": "steam/"
-        }
+        },
+        "files": ["steam/Helpers.php"]
     }
 }
