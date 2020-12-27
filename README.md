@@ -2,7 +2,7 @@
  
 ## Example
 
-Sumple auth in CLI:
+Simple auth in CLI:
 ```php
 // steam.php
 
