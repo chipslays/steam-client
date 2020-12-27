@@ -13,11 +13,6 @@ class Client extends Container
 {
     private $config = [];
 
-    /**
-     * @var Curl
-     */
-    private $curl;
-
     private $username;
     private $password;
     private $sessionDir;
@@ -161,7 +156,7 @@ class Client extends Container
     public function getBalance()
     {
         $response = $this->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
-        
+
         $pattern = '/<span id="marketWalletBalanceAmount">(.+?)<\/span>/';
         preg_match_all($pattern, $response, $matches);
 
@@ -179,7 +174,32 @@ class Client extends Container
         ];
     }
 
+    public function canTrade()
+    {
+        $response = $this->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
+
+        if (stripos($response, 'market_warning_header') !== false) {
+            if (stripos($response, 'Steam Guard for 7 days') !== false) {
+                return self::GUARD_7_DAYS_BAN;
+            }
+            return self::CANT_TRADE;
+        } else {
+            return self::CAN_TRADE;
+        }
+    }
+
     public function isLoggedIn()
+    {
+        $loggedIn = $this->checkAuth();
+
+        if ($loggedIn) {
+            $this->initSession();
+        }
+
+        return $loggedIn;
+    }
+
+    private function checkAuth()
     {
         $response = $this->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
         return stripos($response, 'wallet balance') !== false;
@@ -207,11 +227,11 @@ class Client extends Container
     private function initSession()
     {
         $response = $this->request()->get('https://steamcommunity.com/', ['l' => 'english']);
-   
+
         $pattern = '/g_steamID = (.*);/';
         preg_match($pattern, $response, $matches);
         if (!isset($matches[1])) {
-            throw new \Exception('Unexpected response from Steam #1.');
+            throw new \Exception('Cant set `steamId`.');
         }
 
         // set steamId
@@ -225,7 +245,7 @@ class Client extends Container
         $pattern = '/g_sessionID = (.*);/';
         preg_match($pattern, $response, $matches);
         if (!isset($matches[1])) {
-            throw new \Exception('Unexpected response from Steam #2.');
+            throw new \Exception('Cant set `sessionId`.');
         }
         $sessionId = str_replace('"', '', $matches[1]);
         $this->setSessionId($sessionId);
