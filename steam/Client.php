@@ -141,7 +141,7 @@ class Client extends Container
             return ['code' => Auth::FAIL, 'response' => $response];
         }
 
-        if ($response->has('captcha_needed')) {
+        if ($response->has('captcha_needed') && $response->get('captcha_gid') !== -1) {
             $this->requiresCaptcha = true;
             $this->captchaGID = $response->get('captcha_gid');
             return ['code' => Auth::CAPTCHA, 'response' => $response];
@@ -153,7 +153,7 @@ class Client extends Container
             return ['code' => Auth::EMAIL, 'response' => $response];
         }
 
-        if ($response->has('requires_twofactor') && !$response->get('success')) {
+        if ($response->get('requires_twofactor') !== false && !$response->get('success')) {
             $this->requires2FA = true;
             return ['code' => Auth::TWO_FACTOR, 'response' => $response];
         }
