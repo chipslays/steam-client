@@ -80,14 +80,14 @@ if (!$client->isLoggedIn()) {
 }
 
 /** We are now logged in */
-$balance = $client->getBalance();
+$balance = $client->market()->getBalance()
 print_r($balance);
 
-/** output */
+/** Output */
 Array
 (
     [raw] => 13.37 pуб.
-    [balance] => 13.37
+    [clean] => 13.37
 )
 ```
 

@@ -30,14 +30,20 @@ class Client extends Container
     private $requires2FA = false;
     private $twoFactorCode;
 
-    public const CANT_TRADE = 99;
-    public const CAN_TRADE = 100;
-    public const GUARD_7_DAYS_BAN = 101;
-
     /**
      * @var CLImate
      */
     private $cli;
+
+    /**
+     * @var Market
+     */
+    private $market;
+
+    /**
+     * @var User
+     */
+    private $user;
 
     public function __construct($config = ['2'])
     {
@@ -50,6 +56,8 @@ class Client extends Container
         $this->sessionDir = $this->config->get('sessionDir');
 
         $this->cli = new CLImate;
+        $this->market = new Market($this);
+        $this->user = new User($this);
     }
 
     public function request()
@@ -65,6 +73,22 @@ class Client extends Container
         });
 
         return $curl;
+    }
+
+    /**
+     * @return Market
+     */
+    public function market(): Market
+    {
+        return $this->market;
+    }
+
+    /**
+     * @return User
+     */
+    public function user(): User
+    {
+        return $this->user;
     }
 
     public function config()
@@ -151,41 +175,6 @@ class Client extends Container
         $this->initSession();
 
         return ['code' => Auth::SUCCESS, 'response' => $response];
-    }
-
-    public function getBalance()
-    {
-        $response = $this->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
-
-        $pattern = '/<span id="marketWalletBalanceAmount">(.+?)<\/span>/';
-        preg_match_all($pattern, $response, $matches);
-
-        if (empty($matches[1]) || sizeof($matches[1]) == 0) {
-            return false;
-        }
-
-        $rawBalance = trim($matches[1][0]);
-        $rawBalance = str_ireplace(',', '.', $rawBalance);
-        $cleanBalance = (float) filter_var($rawBalance, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-
-        return [
-            'raw' => $rawBalance,
-            'balance' => $cleanBalance,
-        ];
-    }
-
-    public function canTrade()
-    {
-        $response = $this->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
-
-        if (stripos($response, 'market_warning_header') !== false) {
-            if (stripos($response, 'Steam Guard for 7 days') !== false) {
-                return self::GUARD_7_DAYS_BAN;
-            }
-            return self::CANT_TRADE;
-        } else {
-            return self::CAN_TRADE;
-        }
     }
 
     public function isLoggedIn()
