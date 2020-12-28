@@ -86,7 +86,7 @@ print_r($balance);
 /** Output */
 Array
 (
-    [raw] => 13.37 pуб.
+    [raw] => 13,37 pуб.
     [clean] => 13.37
 )
 ```
