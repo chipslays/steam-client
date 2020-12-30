@@ -153,7 +153,7 @@ class Client extends Container
             return ['code' => Auth::EMAIL, 'response' => $response];
         }
 
-        if ($response->get('requires_twofactor') !== false && !$response->get('success')) {
+        if ($response->get('requires_twofactor') && !$response->get('success')) {
             $this->requires2FA = true;
             return ['code' => Auth::TWO_FACTOR, 'response' => $response];
         }
@@ -166,15 +166,21 @@ class Client extends Container
             return ['code' => Auth::BAD_CREDENTIALS, 'response' => $response];
         }
 
+        if ($response->get('success') == false && strpos($response->get('message'), 'here have been too many login failures from your network in a short time period') !== false) {
+            return ['code' => Auth::THROTTLE, 'response' => $response];
+        }
+
         if ($response->get('success')) {
             if ($response->has('oauth')) {
                 file_put_contents($this->getAuthFile(), $response->get('oauth'));
             }
+
+            $this->initSession();
+
+            return ['code' => Auth::SUCCESS, 'response' => $response];
         }
 
-        $this->initSession();
-
-        return ['code' => Auth::SUCCESS, 'response' => $response];
+        return ['code' => Auth::UNEXPECTED, 'response' => $response];
     }
 
     public function isLoggedIn()

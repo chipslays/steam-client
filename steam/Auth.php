@@ -11,4 +11,6 @@ class Auth
     public const BAD_CREDENTIALS    = 5;
     public const SUCCESS            = 6;
     public const FAIL               = 7;
+    public const THROTTLE           = 8;
+    public const UNEXPECTED         = 9;
 }
