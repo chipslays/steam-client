@@ -29,7 +29,7 @@ if (!$client->isLoggedIn()) {
         switch ($auth['code']) {
             case Auth::CAPTCHA:
                 $captchaLink = $client->getCaptchaLink();
-                cli()->yellow()->out("Please enter the code from the captcha picture: {$captchaLink}");
+                cli()->yellow()->out("[{$tryAuthCount}] Please enter the code from the captcha picture: {$captchaLink}");
                 $input = cli()->input('>>> Enter captcha code:');
                 $captchaResolveText = $input->prompt();
                 $client->setCaptchaText($captchaResolveText);
@@ -52,6 +52,14 @@ if (!$client->isLoggedIn()) {
     
             case Auth::FAIL:
                 throw new Exception("Login fail.");
+                break;
+
+            case Auth::THROTTLE:
+                throw new Exception($auth['response']->get('message'));
+                break;
+
+            case Auth::UNEXPECTED:
+                throw new Exception("Whoops, something wrong.");
                 break;
     
             case Auth::BAD_CREDENTIALS:
