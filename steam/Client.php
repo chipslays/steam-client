@@ -65,12 +65,18 @@ class Client extends Container
         $curl = new Curl();
         $curl->setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36');
         $curl->setReferrer('https://steamcommunity.com/');
+        
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setCookieFile($this->getCookieFile());
         $curl->setCookieJar($this->getCookieFile());
         $curl->setJsonDecoder(function ($response) {
             return new Dot(json_decode($response, true));
         });
+
+        $proxy= $this->config()->get('proxy', false);
+        if ($proxy) {
+            $curl->setOpt(CURLOPT_PROXY, $proxy);
+        }
 
         return $curl;
     }
