@@ -22,14 +22,15 @@ $tryAuthCount = 0;
 if (!$client->isLoggedIn()) {
     $auth = $client->auth();
     while ($auth['code'] !== Auth::SUCCESS) {
-        if (++$tryAuthCount >= 5) {
+         if (++$tryAuthCount >= 1000) {
             throw new Exception('To many auth fails. For this you can get banned by IP if you continue.');
         }
-    
+        
         switch ($auth['code']) {
             case Auth::CAPTCHA:
+                cli()->yellow()->out($auth['response']->get('message'));
                 $captchaLink = $client->getCaptchaLink();
-                cli()->yellow()->out("[{$tryAuthCount}] Please enter the code from the captcha picture: {$captchaLink}");
+                cli()->yellow()->out($captchaLink);
                 $input = cli()->input('>>> Enter captcha code:');
                 $captchaResolveText = $input->prompt();
                 $client->setCaptchaText($captchaResolveText);
@@ -44,14 +45,19 @@ if (!$client->isLoggedIn()) {
                 break;
                 
             case Auth::TWO_FACTOR:
+                cli()->yellow()->out($auth['response']->get('message'));
                 $input = cli()->input('>>> Enter 2FA code:');
                 $twoFactorCode = $input->prompt();
                 $client->setTwoFactorCode($twoFactorCode);
                 $auth = $client->auth();
-                break;
     
             case Auth::FAIL:
-                throw new Exception("Login fail.");
+                print_r($auth);
+                throw new Exception('Fail auth.');
+                break;
+
+            case Auth::BAD_RSA:
+                throw new Exception('Fail RSA');
                 break;
 
             case Auth::THROTTLE:
@@ -59,11 +65,12 @@ if (!$client->isLoggedIn()) {
                 break;
 
             case Auth::UNEXPECTED:
-                throw new Exception("Whoops, something wrong.");
+                print_r($auth);
+                throw new Exception('Unexpected error 1');
                 break;
     
             case Auth::BAD_CREDENTIALS:
-                cli()->lightRed()->out('Error: Invalid username or password in profile.');
+                cli()->lightRed()->out($auth['response']->get('message'));
                 $input = cli()->confirm('Want to enter new credentials?');
     
                 if (!$input->confirmed()) {
@@ -80,14 +87,14 @@ if (!$client->isLoggedIn()) {
                 break;
     
             default:
-                throw new Exception("Unexpected error.");
+                throw new Exception("Unexpected error 2");
                 break;
         }
     }
 }
 
 /** We are now logged in */
-$balance = $client->market()->getBalance()
+$balance = $client->market()->getBalance();
 print_r($balance);
 
 /** Output */
