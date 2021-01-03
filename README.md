@@ -22,7 +22,7 @@ $tryAuthCount = 0;
 if (!$client->isLoggedIn()) {
     $auth = $client->auth();
     while ($auth['code'] !== Auth::SUCCESS) {
-         if (++$tryAuthCount >= 1000) {
+         if (++$tryAuthCount >= 5) {
             throw new Exception('To many auth fails. For this you can get banned by IP if you continue.');
         }
         
