@@ -73,7 +73,7 @@ class Client extends Container
             return new Dot(json_decode($response, true));
         });
 
-        $proxy= $this->config()->get('proxy', false);
+        $proxy = $this->config()->get('proxy', false);
         if ($proxy) {
             $curl->setOpt(CURLOPT_PROXY, $proxy);
         }
