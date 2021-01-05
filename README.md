@@ -1,5 +1,7 @@
 # WIP: PHP Steam Client 
  
+Work in progress
+
 ## Example
 
 Simple auth in CLI:
