@@ -2,3 +2,6 @@
 vendor
 steam.php
 storage
+composer.lock
+steam.traineddata
+bruteforce.php

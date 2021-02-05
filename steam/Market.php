@@ -18,6 +18,11 @@ class Market
         $this->client = $client;
     }
 
+    /**
+     * Get balance.
+     *
+     * @return array
+     */
     public function getBalance()
     {
         $response = $this->client->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
@@ -38,9 +43,14 @@ class Market
         ];
     }
 
+    /**
+     * Can trade.
+     *
+     * @return int 
+     */
     public function canTrade()
     {
-        $response = $this->client->get('https://steamcommunity.com/market/', ['l' => 'english']);
+        $response = $this->client->request()->get('https://steamcommunity.com/market/', ['l' => 'english']);
 
         if (stripos($response, 'market_warning_header') !== false) {
             if (stripos($response, 'Steam Guard for 7 days') !== false) {
@@ -52,6 +62,12 @@ class Market
         }
     }
 
+    /**
+     * Accept offer.
+     *
+     * @param array $offer
+     * @return void
+     */
     public function acceptOffer($offer)
     {
         $url = 'https://steamcommunity.com/tradeoffer/' . $offer['tradeofferid'] . '/accept';

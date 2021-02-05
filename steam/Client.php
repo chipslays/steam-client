@@ -3,11 +3,12 @@
 namespace Steam;
 
 use Curl\Curl;
-use Adbar\Dot;
+use Chipslays\Collection\Collection;
 use phpseclib\Crypt\RSA;
 use phpseclib\Math\BigInteger;
 use Container\Container;
 use League\CLImate\CLImate;
+use Cracker\Crack;
 
 class Client extends Container
 {
@@ -47,8 +48,7 @@ class Client extends Container
 
     public function __construct($config = ['2'])
     {
-        $this->config = new Dot($this->config);
-        $this->config->merge($config);
+        $this->config = new Collection(array_merge($this->config, $config));
 
         $this->username = $this->config->get('username');
         $this->password = $this->config->get('password');
@@ -70,7 +70,7 @@ class Client extends Container
         $curl->setCookieFile($this->getCookieFile());
         $curl->setCookieJar($this->getCookieFile());
         $curl->setJsonDecoder(function ($response) {
-            return new Dot(json_decode($response, true));
+            return new Collection(json_decode($response, true));
         });
 
         $proxy = $this->config()->get('proxy', false);
@@ -137,9 +137,12 @@ class Client extends Container
             'emailsteamid' => ($this->requires2FA || $this->requiresEmail) ? (string) $this->steamId : '',
             'emailauth' => $this->requiresEmail ? $this->emailCode : '',
             'rsatimestamp' => $response->get('timestamp'),
-            'remember_login' => 'false',
+            'remember_login' => 'true',
+            'loginfriendlyname' => "{$this->username}_COMPUTER",
             'l' => 'english',
         ];
+
+        // print_r($params);
 
         $response = $this->request()->post('https://steamcommunity.com/login/dologin/', $params);
 
@@ -150,7 +153,37 @@ class Client extends Container
         if ($response->has('captcha_needed') && $response->get('captcha_gid') !== -1) {
             $this->requiresCaptcha = true;
             $this->captchaGID = $response->get('captcha_gid');
-            return ['code' => Auth::CAPTCHA, 'response' => $response];
+
+            if (!$this->config->get('cracker.enable')) {
+                return ['code' => Auth::CAPTCHA, 'response' => $response];
+            }
+
+            $this->cli()->blue("[Cracker Debug]");
+            $this->cli()->lightBlue("Captcha needed...");
+            $this->cli()->lightBlue($this->getCaptchaLink());
+            $this->cli()->lightBlue("Try resolve captcha...");
+
+            $captchaResolveText = (new Crack($this->getCaptchaLink()))
+                ->executable($this->config->get('cracker.executable'))
+                ->temp($this->config->get('cracker.temp'))
+                ->tessdata($this->config->get('cracker.tessdata'))
+                ->model($this->config->get('cracker.model'))
+                ->iterations($this->config->get('cracker.iterations'))
+                ->resolve();
+
+            $this->cli()->lightBlue("Captcha resolve text: {$captchaResolveText}");
+
+            $this->cli()->lightBlue("Set captcha...");
+            $this->setCaptchaText(trim($captchaResolveText));
+            
+            $this->cli()->lightBlue("Try again auth...");
+
+            $input = cli()->input("Continue? {$this->username} {$this->password}");
+            $input = $input->prompt();
+
+            $auth = call_user_func([$this, 'auth']);
+
+            return $auth;
         }
 
         if ($response->has('emailauth_needed')) {
