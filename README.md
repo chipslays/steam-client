@@ -2,6 +2,12 @@
  
 Work in progress
 
+## Installation
+
+```bash
+$ composer require chipslays/steam-client
+```
+
 ## Example
 
 Simple auth in CLI:
